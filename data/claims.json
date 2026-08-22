@@ -1,0 +1,10 @@
+[
+  {"claim_id": "EXP-101", "employee": "Priya Shah", "department": "Sales", "amount": 420.00},
+  {"claim_id": "EXP-102", "employee": "Daniel Kim", "department": "Sales", "amount": 1350.00},
+  {"claim_id": "EXP-103", "employee": "Maya Lopez", "department": "Engineering", "amount": 780.00},
+  {"claim_id": "EXP-104", "employee": "Aisha Patel", "department": "Engineering", "amount": 2100.00},
+  {"claim_id": "EXP-105", "employee": "Noah Chen", "department": "Marketing", "amount": 1800.00},
+  {"claim_id": "EXP-106", "employee": "Lena Brown", "department": "Support", "amount": 650.00},
+  {"claim_id": "EXP-107", "employee": "Omar Ali", "department": "Sales", "amount": 2400.00},
+  {"claim_id": "EXP-108", "employee": "Sara Diaz", "department": "Marketing", "amount": 1600.00}
+]

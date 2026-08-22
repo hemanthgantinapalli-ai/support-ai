@@ -1,0 +1,5 @@
+If department is Sales and amount under $500 then approve
+If department is Sales and amount between $500 and $2000 then escalate
+If amount above $2000 then escalate
+If department is Engineering and amount under $1000 then approve
+If department is Marketing and amount over $1500 then reject
