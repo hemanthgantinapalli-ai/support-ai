@@ -182,11 +182,27 @@ st.set_page_config(page_title="Policy-Driven Approval Agent", layout="wide")
 st.markdown(
     """
     <style>
-    .main { background: linear-gradient(135deg, #0b1020 0%, #101a2d 40%, #172033 100%); }
+    .main { background: linear-gradient(135deg, #071120 0%, #0d1b2a 35%, #16263f 100%); }
     .stApp { color: #edf3ff; }
-    div[data-testid="stMetricValue"] { font-size: 1.8rem; }
-    .block-container { padding-top: 1.5rem; }
-    .stDataFrame { background: rgba(255,255,255,0.04); border-radius: 12px; }
+    .block-container { padding-top: 1.5rem; padding-bottom: 2rem; }
+    div[data-testid="stMetricValue"] { font-size: 1.8rem; font-weight: 700; }
+    div[data-testid="metric-container"] {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        border-radius: 14px;
+        padding: 0.8rem 0.9rem;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.25);
+    }
+    .stDataFrame { background: rgba(15, 23, 42, 0.72); border-radius: 12px; }
+    .stTextArea textarea { background: rgba(15, 23, 42, 0.85); color: #e2e8f0; border: 1px solid rgba(148, 163, 184, 0.28); }
+    .stButton > button {
+        border-radius: 10px; font-weight: 600; padding: 0.5rem 1rem;
+        background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+        border: none; color: white;
+    }
+    .stButton > button:hover { filter: brightness(1.08); }
+    .stSidebar > div { background: rgba(15, 23, 42, 0.75); }
+    section[data-testid="stSidebar"] { background: rgba(15, 23, 42, 0.5); }
     </style>
     """,
     unsafe_allow_html=True,
@@ -248,7 +264,7 @@ with col1:
     st.subheader("Claim decisions")
     df = pd.DataFrame(results)
     df["amount"] = df["amount"].map(lambda value: f"${float(value):,.2f}")
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width="stretch", hide_index=True)
 
 with col2:
     st.subheader("Traceability")
@@ -256,8 +272,8 @@ with col2:
         color = {"approve": "#6ee7b7", "reject": "#fca5a5", "escalate": "#fbbf24"}.get(item["decision"], "#e2e8f0")
         st.markdown(
             f"""
-            <div style="padding: 0.8rem 1rem; border-left: 5px solid {color}; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 0.8rem;">
-            <strong>{item['claim_id']}</strong> — <span style="text-transform: uppercase;">{item['decision']}</span><br>
+            <div style="padding: 0.9rem 1rem; border-left: 5px solid {color}; background: rgba(15, 23, 42, 0.72); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 10px; margin-bottom: 0.8rem; box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18);">
+            <strong>{item['claim_id']}</strong> — <span style="text-transform: uppercase; font-weight: 700;">{item['decision']}</span><br>
             {item['rationale']}
             </div>
             """,
@@ -267,7 +283,7 @@ with col2:
 st.subheader("Sample claim dataset")
 claim_df = pd.DataFrame(claims)
 claim_df["amount"] = claim_df["amount"].map(lambda value: f"${float(value):,.2f}")
-st.dataframe(claim_df, use_container_width=True, hide_index=True)
+st.dataframe(claim_df, width="stretch", hide_index=True)
 
 st.markdown("### Why this is strong for the assessment")
 st.markdown(
