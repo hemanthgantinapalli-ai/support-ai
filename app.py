@@ -36,7 +36,7 @@ def parse_rule(rule_text: str) -> dict:
 
     department = None
     dept_match = re.search(
-        r"(?:department\s+(?:is|=)|for)\s+([A-Za-z][A-Za-z\s-]*)",
+        r"(?:department\s+(?:is|=)|for)\s*([A-Za-z][A-Za-z\s-]*?)(?=\s+(?:and|amount|then|$))",
         condition,
         flags=re.IGNORECASE,
     )
@@ -179,33 +179,71 @@ def render_guide():
 
 st.set_page_config(page_title="Policy-Driven Approval Agent", layout="wide")
 
+st.markdown(
+    """
+    <style>
+    .main { background: linear-gradient(135deg, #0b1020 0%, #101a2d 40%, #172033 100%); }
+    .stApp { color: #edf3ff; }
+    div[data-testid="stMetricValue"] { font-size: 1.8rem; }
+    .block-container { padding-top: 1.5rem; }
+    .stDataFrame { background: rgba(255,255,255,0.04); border-radius: 12px; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.title("Policy-Driven Approval Agent")
-st.caption("A configurable approval workflow that translates plain-English rules into traceable decisions.")
+st.caption("A configurable, traceable approval workflow for plain-English business policy.")
 
 with st.sidebar:
     st.header("Rules configuration")
-    rules_text = st.text_area(
+    default_rules = "\n".join(load_default_rules())
+    if "rules_text" not in st.session_state:
+        st.session_state.rules_text = default_rules
+
+    st.session_state.rules_text = st.text_area(
         "Edit plain-English business rules",
-        value="\n".join(load_default_rules()),
-        height=220,
+        value=st.session_state.rules_text,
+        height=240,
     )
-    apply_rules = st.button("Evaluate claims")
+
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("Evaluate"):
+            st.session_state.apply_rules = True
+    with col_btn2:
+        if st.button("Reset"):
+            st.session_state.rules_text = default_rules
+            st.session_state.apply_rules = False
 
     st.markdown("---")
     render_guide()
 
 claims = load_claims()
 
-if apply_rules:
+if "apply_rules" not in st.session_state:
+    st.session_state.apply_rules = False
+
+if st.session_state.apply_rules:
     try:
-        results = evaluate_claims(rules_text, claims)
+        results = evaluate_claims(st.session_state.rules_text, claims)
     except ValueError as exc:
         st.error(str(exc))
         st.stop()
 else:
-    results = evaluate_claims("\n".join(load_default_rules()), claims)
+    results = evaluate_claims(default_rules, claims)
 
-col1, col2 = st.columns([1.4, 1])
+count_map = {"approve": 0, "reject": 0, "escalate": 0}
+for item in results:
+    count_map[item["decision"]] = count_map.get(item["decision"], 0) + 1
+
+metric_cols = st.columns(4)
+metric_cols[0].metric("Total claims", len(results))
+metric_cols[1].metric("Approved", count_map["approve"])
+metric_cols[2].metric("Escalated", count_map["escalate"])
+metric_cols[3].metric("Rejected", count_map["reject"])
+
+col1, col2 = st.columns([1.5, 1])
 with col1:
     st.subheader("Claim decisions")
     df = pd.DataFrame(results)
@@ -213,17 +251,25 @@ with col1:
     st.dataframe(df, use_container_width=True, hide_index=True)
 
 with col2:
-    st.subheader("Rule traceability")
+    st.subheader("Traceability")
     for item in results:
-        st.markdown(f"**{item['claim_id']}**: {item['decision'].upper()}\n\n{item['rationale']}")
-        st.markdown("---")
+        color = {"approve": "#6ee7b7", "reject": "#fca5a5", "escalate": "#fbbf24"}.get(item["decision"], "#e2e8f0")
+        st.markdown(
+            f"""
+            <div style="padding: 0.8rem 1rem; border-left: 5px solid {color}; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 0.8rem;">
+            <strong>{item['claim_id']}</strong> — <span style="text-transform: uppercase;">{item['decision']}</span><br>
+            {item['rationale']}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-st.subheader("Sample claim data")
+st.subheader("Sample claim dataset")
 claim_df = pd.DataFrame(claims)
 claim_df["amount"] = claim_df["amount"].map(lambda value: f"${float(value):,.2f}")
 st.dataframe(claim_df, use_container_width=True, hide_index=True)
 
-st.markdown("### Why this works")
+st.markdown("### Why this is strong for the assessment")
 st.markdown(
-    "The app keeps the decision logic transparent: every claim is evaluated against the configured rules in order, and the explanation cites the specific department and amount condition that triggered the outcome. This makes it easy for a non-technical reviewer to understand, audit, and edit business policy without touching code."
+    "The logic remains explicit and auditable: each claim is evaluated against a configured rule set, and the rationale calls out the exact department and amount conditions that caused the decision. That makes the workflow easy for a reviewer to trust, edit, and explain in a client-facing demo."
 )
